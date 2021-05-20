@@ -1,31 +1,93 @@
 package com.germaniii.graphicsapp;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class Main extends ApplicationAdapter {
-	SpriteBatch batch;
-	Texture img;
-	
+	OrthographicCamera camera;
+	ShapeRenderer shapeRenderer;
+
+	float rectWidth = 100;
+	float rectHeight = 50;
+	float moveSpeed = 100;
+	float rotateSpeed = 20;
+	float zoomSpeed = 1;
+
 	@Override
-	public void create () {
-		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
+	public void create() {
+		// Field Of View = ViewPort
+		camera = new OrthographicCamera(200, 100);
+		camera.position.set(0, 0, 0);
+		camera.update();
+		// Orthographic camera can be used for map creation and shit.
+		// So whenever you make a 2d game let's say side scroller,
+		// You make one whole level, then use the orthographic camera to scroll horizontally
+		// to the whole level
+
+		shapeRenderer = new ShapeRenderer();
 	}
 
 	@Override
-	public void render () {
-		ScreenUtils.clear(1, 0, 0, 1);
-		batch.begin();
-		batch.draw(img, 0, 0);
-		batch.end();
+	public void render() {
+
+		// move camera left and right
+		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+			camera.translate(0, moveSpeed * Gdx.graphics.getDeltaTime());
+		} else if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+			camera.translate(0, -moveSpeed * Gdx.graphics.getDeltaTime());
+		}
+
+		// move camera up and down
+		if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+			camera.translate(-moveSpeed * Gdx.graphics.getDeltaTime(), 0);
+		} else if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+			camera.translate(moveSpeed * Gdx.graphics.getDeltaTime(), 0);
+		}
+
+		// zoom camera
+		if(Gdx.input.isKeyPressed((Input.Keys.UP))){
+			camera.zoom -= zoomSpeed * Gdx.graphics.getDeltaTime();
+		}
+		else if(Gdx.input.isKeyPressed((Input.Keys.DOWN))){
+			camera.zoom += zoomSpeed * Gdx.graphics.getDeltaTime();
+		}
+
+		// rotate camera
+		if(Gdx.input.isKeyPressed((Input.Keys.LEFT))){
+			camera.rotate(-rotateSpeed * Gdx.graphics.getDeltaTime());
+		}
+		else if(Gdx.input.isKeyPressed((Input.Keys.RIGHT))){
+			camera.rotate(rotateSpeed * Gdx.graphics.getDeltaTime());
+		}
+
+		Gdx.gl.glClearColor(.25f, .25f, .25f, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		camera.update();
+		shapeRenderer.setProjectionMatrix(camera.combined);
+
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		shapeRenderer.setColor(1, 0, 0, 1);
+		shapeRenderer.rect(-rectWidth, -rectHeight, rectWidth, rectHeight);
+		shapeRenderer.setColor(0, 1, 0, 1);
+		shapeRenderer.rect(0, -rectHeight, rectWidth, rectHeight);
+		shapeRenderer.setColor(0, 0, 1, 1);
+		shapeRenderer.rect(0, 0, rectWidth, rectHeight);
+		shapeRenderer.setColor(1, 1, 0, 1);
+		shapeRenderer.rect(-rectWidth, 0, rectWidth, rectHeight);
+		shapeRenderer.end();
 	}
-	
+
 	@Override
-	public void dispose () {
-		batch.dispose();
-		img.dispose();
+	public void dispose() {
+		shapeRenderer.dispose();
 	}
 }
